@@ -259,7 +259,7 @@ bool M6502::execute(uInt32 number)
 #endif  // DEBUGGER_SUPPORT
 
       uInt16 operandAddress = 0, operandAddressHi = 0,
-        intermediateAddress = 0, intermediateAddressHi = 0,
+        intermediateAddress = 0, intermediateAddressHi = 0;
       uInt8 operand = 0, peekResult = 0;
 
       // Reset the peek/poke address pointers
