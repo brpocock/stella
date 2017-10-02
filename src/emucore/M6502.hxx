@@ -229,7 +229,8 @@ class M6502 : public Serializable
 
       @return The byte at the specified address
     */
-    uInt8 peek(uInt16 address, uInt8 flags);
+    uInt8 peek(uInt16 address, uInt8 flags);    
+    void peek(uInt16 address, uInt8 flags, uInt8* pResult = 0);
 
     /**
       Change the byte at the specified address to the given value and
@@ -367,9 +368,17 @@ class M6502 : public Serializable
 
     // Did we just now hit a trap?
     bool myJustHitTrapFlag;
+    // Did we just now hit a write trap?
+    bool myJustHitWriteTrapFlag;
+    // Did we just now hit a read trap?
+    bool myJustHitReadTrapFlag;
+
     struct HitTrapInfo {
       string message;
-      int address;
+      int address;      
+      uInt8 value;
+      uInt8 flags;
+      uInt8* pResult; // Where should the read result go?
     };
     HitTrapInfo myHitTrapInfo;
 

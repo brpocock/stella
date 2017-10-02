@@ -66,6 +66,7 @@ M6502::M6502(const Settings& settings)
 #ifdef DEBUGGER_SUPPORT
   myDebugger = nullptr;
   myJustHitTrapFlag = false;
+  myJustHitReadTrapFlag = myJustHitWriteTrapFlag = false;
 #endif
 }
 
@@ -107,9 +108,21 @@ void M6502::reset()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-inline uInt8 M6502::peek(uInt16 address, uInt8 flags)
+inline void M6502::peek(uInt16 address, uInt8 flags, uInt8* pResult)
 {
   handleHalt();
+
+  #ifdef DEBUGGER_SUPPORT
+  if(myWriteTraps.isInitialized() && myWriteTraps.isSet(address) && !myJustHitReadTrapFlag)
+  {
+    myJustHitTrapFlag = myJustHitReadTrapFlag = true;
+    myHitTrapInfo.message = "RTrap: ";
+    myHitTrapInfo.address = address;
+    myHitTrapInfo.flags = flags;
+    myHitTrapInfo.pResult = pResult;
+    return;
+  }
+  #endif  // DEBUGGER_SUPPORT*/
 
   ////////////////////////////////////////////////
   // TODO - move this logic directly into CartAR
@@ -121,23 +134,45 @@ inline uInt8 M6502::peek(uInt16 address, uInt8 flags)
   ////////////////////////////////////////////////
   mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
 
-#ifdef DEBUGGER_SUPPORT
+/*#ifdef DEBUGGER_SUPPORT
   if(myReadTraps.isInitialized() && myReadTraps.isSet(address))
   {
     myJustHitTrapFlag = true;
     myHitTrapInfo.message = "RTrap: ";
     myHitTrapInfo.address = address;
   }
-#endif  // DEBUGGER_SUPPORT
+#endif  // DEBUGGER_SUPPORT*/
 
   uInt8 result = mySystem->peek(address, flags);
   myLastPeekAddress = address;
+  if (pResult)
+    *pResult = result;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+inline uInt8 M6502::peek(uInt16 address, uInt8 flags)
+{
+  uInt8 result;
+
+  peek(address, flags, &result);
   return result;
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 inline void M6502::poke(uInt16 address, uInt8 value, uInt8 flags)
 {
+#ifdef DEBUGGER_SUPPORT
+  if(myWriteTraps.isInitialized() && myWriteTraps.isSet(address) && !myJustHitWriteTrapFlag)
+  {
+    myJustHitTrapFlag = myJustHitWriteTrapFlag = true;
+    myHitTrapInfo.message = "WTrap: ";
+    myHitTrapInfo.address = address;
+    myHitTrapInfo.value = value;
+    myHitTrapInfo.flags = flags;
+    return;
+  }
+#endif  // DEBUGGER_SUPPORT
+
   ////////////////////////////////////////////////
   // TODO - move this logic directly into CartAR
   if(address != myLastAddress)
@@ -148,14 +183,14 @@ inline void M6502::poke(uInt16 address, uInt8 value, uInt8 flags)
   ////////////////////////////////////////////////
   mySystem->incrementCycles(SYSTEM_CYCLES_PER_CPU);
 
-#ifdef DEBUGGER_SUPPORT
+/*#ifdef DEBUGGER_SUPPORT
   if(myWriteTraps.isInitialized() && myWriteTraps.isSet(address))
   {
     myJustHitTrapFlag = true;
     myHitTrapInfo.message = "WTrap: ";
     myHitTrapInfo.address = address;
   }
-#endif  // DEBUGGER_SUPPORT
+#endif  // DEBUGGER_SUPPORT*/
 
   mySystem->poke(address, value, flags); 
   myLastPokeAddress = address;
@@ -189,14 +224,26 @@ bool M6502::execute(uInt32 number)
     for(; !myExecutionStatus && (number != 0); --number)
     {
 #ifdef DEBUGGER_SUPPORT
+      // abort due to trap hit
       if(myJustHitTrapFlag)
       {
         if(myDebugger && myDebugger->start(myHitTrapInfo.message, myHitTrapInfo.address))
         {
-          myJustHitTrapFlag = false;
+          myJustHitTrapFlag = false;                
           return true;
         }
       }
+      // continue after trap hit
+      if(myJustHitReadTrapFlag)
+      {
+        peek(myHitTrapInfo.address, myHitTrapInfo.flags, myHitTrapInfo.pResult);
+        myJustHitReadTrapFlag = false;
+      }
+      if(myJustHitWriteTrapFlag)
+      {
+        poke(myHitTrapInfo.address, myHitTrapInfo.value, myHitTrapInfo.flags);
+        myJustHitWriteTrapFlag = false;
+      }     
 
       if(myBreakPoints.isInitialized() && myBreakPoints.isSet(PC))
         if(myDebugger && myDebugger->start("BP: ", PC))
@@ -211,14 +258,15 @@ bool M6502::execute(uInt32 number)
       }
 #endif  // DEBUGGER_SUPPORT
 
-      uInt16 operandAddress = 0, intermediateAddress = 0;
-      uInt8 operand = 0;
+      uInt16 operandAddress = 0, intermediateAddress = 0,
+        intermediateAddressLo = 0, intermediateAddressHi = 0,
+      uInt8 operand = 0, peekResult = 0;
 
       // Reset the peek/poke address pointers
       myLastPeekAddress = myLastPokeAddress = myDataAddressForPoke = 0;
 
       // Fetch instruction at the program counter
-      IR = peek(PC++, DISASM_CODE);  // This address represents a code section
+      peek(PC++, DISASM_CODE, &IR);  // This address represents a code section
 
       // Call code to execute the instruction
       switch(IR)

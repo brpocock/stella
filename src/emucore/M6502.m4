@@ -52,151 +52,144 @@
   #endif
 #endif
 
+;-----------------------------------------------------------
+
+define(M6502_ABSOLUTE_ADDRESS(address), `{
+  peek(PC++, DISASM_CODE, &address);
+  peek(PC++, DISASM_CODE, &addressHi)
+  address |= (uInt16(addressHi) << 8);
+}')
+
+define(M6502_ABSOLUTE_ADDRESS_XY_WRITE(address, XY), `{
+  uInt16 low, high;
+  peek(PC++, DISASM_CODE, &low);
+  peek(PC++, DISASM_CODE, &high)
+  high = (uInt16(high) << 8);
+  peek(high | uInt8(low + XY), DISASM_NONE);
+  address = (high | low) + XY;
+}')
+
+define(M6502_ABSOLUTE_ADDRESS_XY_READ(address, XY), `{
+  uInt16 low, high;
+  peek(PC++, DISASM_CODE, &low);
+  peek(PC++, DISASM_CODE, &high)
+  high = (uInt16(high) << 8);
+  address = high | uInt8(low + XY);
+  if((low + XY) > 0xFF)
+  {
+    peek(address, DISASM_NONE); // , &operand
+    address = (high | low) + XY;
+  } 
+  peek(address, DISASM_DATA, &operand);
+}')
+
+;-----------------------------------------------------------
 
 define(M6502_IMPLIED, `{
   peek(PC, DISASM_NONE);
 }')
 
 define(M6502_IMMEDIATE_READ, `{
-  operand = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, &operand);
 }')
 
 define(M6502_ABSOLUTE_READ, `{
-  intermediateAddress = peek(PC++, DISASM_CODE);
-  intermediateAddress |= (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  operand = peek(intermediateAddress, DISASM_DATA);
+  M6502_ABSOLUTE_ADDRESS(intermediateAddress);
+  peek(intermediateAddress, DISASM_DATA, &operand);
 }')
 
 define(M6502_ABSOLUTE_WRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
-  operandAddress |= (uInt16(peek(PC++, DISASM_CODE)) << 8);
+  M6502_ABSOLUTE_ADDRESS(operandAddress);
 }')
 
 define(M6502_ABSOLUTE_READMODIFYWRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
-  operandAddress |= (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  operand = peek(operandAddress, DISASM_DATA);
+  M6502_ABSOLUTE_ADDRESS(operandAddress);
+  peek(operandAddress, DISASM_DATA, &operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
 define(M6502_ABSOLUTEX_READ, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  intermediateAddress = high | uInt8(low + X);
-  if((low + X) > 0xFF)
-  {
-    operand = peek(intermediateAddress, DISASM_NONE);
-    intermediateAddress = (high | low) + X;
-    operand = peek(intermediateAddress, DISASM_DATA);
-  } 
-  else
-  {
-    operand = peek(intermediateAddress, DISASM_DATA);
-  }
+  M6502_ABSOLUTE_ADDRESS_XY_READ(intermediateAddress, X)
 }')
 
 define(M6502_ABSOLUTEX_WRITE, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  peek(high | uInt8(low + X), DISASM_NONE);
-  operandAddress = (high | low) + X;
+  M6502_ABSOLUTE_ADDRESS_XY_WRITE(operandAddress, X);
 }')
 
 define(M6502_ABSOLUTEX_READMODIFYWRITE, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  peek(high | uInt8(low + X), DISASM_NONE);
-  operandAddress = (high | low) + X;
-  operand = peek(operandAddress, DISASM_DATA);
+  M6502_ABSOLUTE_ADDRESS_XY_WRITE(operandAddress, X);
+  peek(operandAddress, DISASM_DATA, &operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
 define(M6502_ABSOLUTEY_READ, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  intermediateAddress = high | uInt8(low + Y);
-  if((low + Y) > 0xFF)
-  {
-    operand = peek(intermediateAddress, DISASM_NONE);
-    intermediateAddress = (high | low) + Y;
-    operand = peek(intermediateAddress, DISASM_DATA);
-  }
-  else
-  {
-    operand = peek(intermediateAddress, DISASM_DATA);
-  }
+  M6502_ABSOLUTE_ADDRESS_XY_READ(intermediateAddress, Y)
 }')
 
 define(M6502_ABSOLUTEY_WRITE, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  peek(high | uInt8(low + Y), DISASM_NONE);
-  operandAddress = (high | low) + Y;
+  M6502_ABSOLUTE_ADDRESS_XY_WRITE(operandAddress, Y)
 }')
 
 define(M6502_ABSOLUTEY_READMODIFYWRITE, `{
-  uInt16 low = peek(PC++, DISASM_CODE);
-  uInt16 high = (uInt16(peek(PC++, DISASM_CODE)) << 8);
-  peek(high | uInt8(low + Y), DISASM_NONE);
-  operandAddress = (high | low) + Y;
-  operand = peek(operandAddress, DISASM_DATA);
+  M6502_ABSOLUTE_ADDRESS_XY_WRITE(operandAddress, Y);
+  peek(operandAddress, DISASM_DATA, &operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
 define(M6502_ZERO_READ, `{
-  intermediateAddress = peek(PC++, DISASM_CODE);
-  operand = peek(intermediateAddress, DISASM_DATA);
+  peek(PC++, DISASM_CODE, &intermediateAddress);
+  peek(intermediateAddress, DISASM_DATA, &operand);
 }')
 
 define(M6502_ZERO_WRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, &operandAddress);
 }')
 
 define(M6502_ZERO_READMODIFYWRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
-  operand = peek(operandAddress, DISASM_DATA);
+  peek(PC++, DISASM_CODE, operandAddress);
+  peek(operandAddress, DISASM_DATA, operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
 define(M6502_ZEROX_READ, `{
-  intermediateAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, intermediateAddress);
   peek(intermediateAddress, DISASM_NONE);
   intermediateAddress += X;
-  operand = peek(intermediateAddress, DISASM_DATA);
+  peek(intermediateAddress, DISASM_DATA, &operand);
 }')
 
 define(M6502_ZEROX_WRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, &operandAddress);
   peek(operandAddress, DISASM_NONE);
   operandAddress = (operandAddress + X) & 0xFF;
 }')
 
 define(M6502_ZEROX_READMODIFYWRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, &operandAddress);
   peek(operandAddress, DISASM_NONE);
   operandAddress = (operandAddress + X) & 0xFF;
-  operand = peek(operandAddress, DISASM_DATA);
+  peek(operandAddress, DISASM_DATA, &operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
 define(M6502_ZEROY_READ, `{
-  intermediateAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, intermediateAddress);
   peek(intermediateAddress, DISASM_NONE);
   intermediateAddress += Y;
-  operand = peek(intermediateAddress, DISASM_DATA);
+  peek(intermediateAddress, DISASM_DATA, &operand);
 }')
 
 define(M6502_ZEROY_WRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, &operandAddress);
   peek(operandAddress, DISASM_NONE);
   operandAddress = (operandAddress + Y) & 0xFF;
 }')
 
 define(M6502_ZEROY_READMODIFYWRITE, `{
-  operandAddress = peek(PC++, DISASM_CODE);
+  peek(PC++, DISASM_CODE, operandAddress);
   peek(operandAddress, DISASM_NONE);
   operandAddress = (operandAddress + Y) & 0xFF;
-  operand = peek(operandAddress, DISASM_DATA);
+  peek(operandAddress, DISASM_DATA, &operand);
   poke(operandAddress, operand, DISASM_WRITE);
 }')
 
@@ -505,8 +498,10 @@ define(M6502_BRK, `{
 
   I = true;
 
-  PC = peek(0xfffe, DISASM_DATA);
-  PC |= (uInt16(peek(0xffff, DISASM_DATA)) << 8);
+  uInt16 PCHi;
+  peek(0xfffe, DISASM_DATA, &PC);
+  peek(0xffff, DISASM_DATA, &PCHi);
+  PC |= (PCHi << 8);
 }')
 
 define(M6502_CLC, `{
@@ -644,7 +639,8 @@ define(M6502_JMP, `{
 }')
 
 define(M6502_JSR, `{
-  uInt8 low = peek(PC++, DISASM_CODE);
+  uInt8 low;
+  peek(PC++, DISASM_CODE, &low);
   peek(0x0100 + SP, DISASM_NONE);
 
   // It seems that the 650x does not push the address of the next instruction
@@ -736,7 +732,7 @@ define(M6502_PHP, `{
 
 define(M6502_PLA, `{
   peek(0x0100 + SP++, DISASM_NONE);
-  A = peek(0x0100 + SP, DISASM_DATA);
+  peek(0x0100 + SP, DISASM_DATA, &A);
   notZ = A;
   N = A & 0x80;
 }')
@@ -848,14 +844,20 @@ define(M6502_RRA, `{
 define(M6502_RTI, `{
   peek(0x0100 + SP++, DISASM_NONE);
   PS(peek(0x0100 + SP++, DISASM_NONE));
-  PC = peek(0x0100 + SP++, DISASM_NONE);
-  PC |= (uInt16(peek(0x0100 + SP, DISASM_NONE)) << 8);
+  
+  uInt16 PCHi;
+  peek(0x0100 + SP++, DISASM_NONE, &PC);
+  peek(0x0100 + SP, DISASM_NONE, &PCHi);
+  PC |= (PCHi << 8);
 }')
 
 define(M6502_RTS, `{
   peek(0x0100 + SP++, DISASM_NONE);
-  PC = peek(0x0100 + SP++, DISASM_NONE);
-  PC |= (uInt16(peek(0x0100 + SP, DISASM_NONE)) << 8);
+
+  uInt16 PCHi;
+  peek(0x0100 + SP++, DISASM_NONE, &PC);
+  peek(0x0100 + SP, DISASM_NONE, &PCHi);
+  PC |= (PCHi << 8);
   peek(PC++, DISASM_NONE);
 }')
 
