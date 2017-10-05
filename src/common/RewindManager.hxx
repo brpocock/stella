@@ -52,25 +52,86 @@ class RewindManager
       Rewind one level of the state list, and display the message associated
       with that state.
     */
-    bool rewindState();
+    bool rewindDebuggerState()
+    {
+      return rewindState(false);
+    }
+
+    /**
+    Rewind ~1s of the state list, and display the message associated
+    with that state.
+    */
+    bool rewindEmulationState()
+    {
+      return rewindState(true);
+    }
+
+    // TODO make private
+    bool rewindState(const bool emulation = false);
+
+    /**
+    */
+    bool unwindDebuggerState()
+    {
+      return unwindState(false);
+    }
+
+
+    /**
+    */
+    bool unwindEmulationState()
+    {
+      return unwindState(true);
+    }
 
     bool empty() const { return myStateList.size() == 0; }
     void clear() { myStateList.clear(); }
 
+
+
   private:
-    // Maximum number of states to save
-    static constexpr uInt32 MAX_SIZE = 100;  // FIXME: use this
+    static constexpr uInt64 FRAME_CYCLES = 76 * 262 * 60;
+
+    static constexpr uInt32 SINGLE_STEPS = 60; // number of guaranteed single cycle rewinds
+    static constexpr uInt32 SECOND_STEPS = 10; // number of guaranteed ~60 frames rewinds 
+    static constexpr uInt32 MERGE_COUNT = 4;   // threshold for deleting same step entries (4 -> 2/3 each)
+    static constexpr uInt32 MAX_SIZE = SINGLE_STEPS + (SECOND_STEPS - MERGE_COUNT) + 46; // Maximum number of states to save
 
     OSystem& myOSystem;
     StateManager& myStateManager;
 
     struct RewindState {
       Serializer data;
-      string message;
+      uInt64 cycles;
+      uInt64 frames; // required for guaranteeing 10s emulation rewind
     };
 
     using RewindPtr = unique_ptr<RewindState>;
     std::list<RewindPtr> myStateList;
+    std::list<RewindPtr>::iterator myCurrentIt;
+
+    uInt64 myFrameLst[MAX_SIZE];
+    uInt32 myStateCount;
+    uInt64 myLastFrames;
+
+    /**
+    */
+    //bool rewindState(const bool emulation = false);
+
+    /**
+    */
+    bool unwindState(bool emulation);
+
+    /**
+    */
+    void compressStates();
+    /**
+    */
+    void deleteState();
+
+    string getMessage(uInt64 cylcesTo);
+
+    void debugList();
 
   private:
     // Following constructors and assignment operators not supported
