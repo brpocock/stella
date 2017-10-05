@@ -230,7 +230,7 @@ class M6502 : public Serializable
       @return The byte at the specified address
     */
     uInt8 peek(uInt16 address, uInt8 flags);    
-    void peek(uInt16 address, uInt8 flags, uInt8* pResult = 0);
+    void peek2(uInt16 address, uInt8 flags, uInt8* pResult = 0);
 
     /**
       Change the byte at the specified address to the given value and

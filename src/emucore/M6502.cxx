@@ -108,7 +108,7 @@ void M6502::reset()
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-inline void M6502::peek(uInt16 address, uInt8 flags, uInt8* pResult)
+inline void M6502::peek2(uInt16 address, uInt8 flags, uInt8* pResult)
 {
   handleHalt();
 
@@ -154,7 +154,7 @@ inline uInt8 M6502::peek(uInt16 address, uInt8 flags)
 {
   uInt8 result;
 
-  peek(address, flags, &result);
+  peek2(address, flags, &result);
   return result;
 }
 
@@ -236,7 +236,7 @@ bool M6502::execute(uInt32 number)
       // continue after trap hit
       if(myJustHitReadTrapFlag)
       {
-        peek(myHitTrapInfo.address, myHitTrapInfo.flags, myHitTrapInfo.pResult);
+        peek2(myHitTrapInfo.address, myHitTrapInfo.flags, myHitTrapInfo.pResult);
         myJustHitReadTrapFlag = false;
       }
       if(myJustHitWriteTrapFlag)
@@ -258,15 +258,16 @@ bool M6502::execute(uInt32 number)
       }
 #endif  // DEBUGGER_SUPPORT
 
-      uInt16 operandAddress = 0, operandAddressHi = 0,
-        intermediateAddress = 0, intermediateAddressHi = 0;
-      uInt8 operand = 0, peekResult = 0;
+      uInt16 operandAddress = 0, intermediateAddress = 0;
+      uInt8 operandAddressLo = 0, operandAddressHi = 0, 
+        intermediateAddressLo = 0, intermediateAddressHi = 0,
+        operand = 0, peekResult = 0;
 
       // Reset the peek/poke address pointers
       myLastPeekAddress = myLastPokeAddress = myDataAddressForPoke = 0;
 
       // Fetch instruction at the program counter
-      peek(PC++, DISASM_CODE, &IR);  // This address represents a code section
+      peek2(PC++, DISASM_CODE, &IR);  // This address represents a code section
 
       // Call code to execute the instruction
       switch(IR)
