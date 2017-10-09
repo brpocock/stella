@@ -8,13 +8,11 @@
 //  SS  SS   tt   ee      ll   ll  aa  aa
 //   SSSS     ttt  eeeee llll llll  aaaaa
 //
-// Copyright (c) 1995-2016 by Bradford W. Mott, Stephen Anthony
+// Copyright (c) 1995-2017 by Bradford W. Mott, Stephen Anthony
 // and the Stella Team
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
-//
-// $Id: CartF9.cxx brpocock $
 //============================================================================
 
 #include <cstring>
@@ -24,12 +22,12 @@
 #include "CartF9.hxx"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-CartridgeF9::CartridgeF9(const uInt8* image, uInt32 size, const Settings& settings)
+CartridgeF9::CartridgeF9(const BytePtr& image, uInt32 size, const Settings& settings)
   : Cartridge(settings),
     myCurrentBank(0)
 {
   // Copy the ROM image into my buffer
-  memcpy(myImage, image, std::min(512*1024u, size));
+  memcpy(myImage, image.get(), std::min(512*1024u, size));
   createCodeAccessBase(512*1024);
 
   // Remember startup bank
@@ -55,6 +53,20 @@ void CartridgeF9::install(System& system)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt8 CartridgeF9::peek(uInt16 address)
 {
+
+  // technically, reading 0xff9 will trip the circuitry and
+  // send the cartridge to a deterministic bank, based on
+  // the contents of the data bus; possibly the bank represented by
+  // the byte value read from 0xff9 in the current bank; this is
+  // not encouraged behavior, and I'm not even sure if it would
+  // work on the hardware yet.
+  if(address = 0x0FF9)
+  {
+    bank(myImage[(myCurrentBank << 12) + address & 0xfff]);
+  }
+
+
+
   return myImage[(myCurrentBank << 12) + address & 0xfff];
 }
 
@@ -79,7 +91,7 @@ bool CartridgeF9::bank(uInt16 bank)
 
   // Remember what bank we're in
   myCurrentBank = bank;
-  uInt16 offset = myCurrentBank << 12;
+  uInt32 offset = myCurrentBank << 12;
 
   System::PageAccess access(this, System::PA_READ);
 
@@ -92,7 +104,7 @@ bool CartridgeF9::bank(uInt16 bank)
   }
 
   // Setup the page access methods for the current bank
-  for(uInt32 address = 0x1000; address < (0x1FF9U & ~System::PAGE_MASK);
+  for(uInt32 address = 0x1000; address < (0x1FF9u & ~System::PAGE_MASK);
       address += (1 << System::PAGE_SHIFT))
   {
     access.directPeekBase = &myImage[offset + (address & 0x0FFF)];
@@ -122,7 +134,7 @@ bool CartridgeF9::patch(uInt16 address, uInt8 value)
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const uInt8* CartridgeF9::getImage(int& size) const
+const uInt8* CartridgeF9::getImage(uInt32& size) const
 {
   size = 512 * 1024u;
   return myImage;

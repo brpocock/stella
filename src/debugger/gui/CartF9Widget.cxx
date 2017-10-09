@@ -31,7 +31,7 @@ CartridgeF9Widget::CartridgeF9Widget(
   : CartDebugWidget(boss, lfont, nfont, x, y, w, h),
     myCart(cart)
 {
-  uInt16 size = 512 * 1024u;
+  uInt32 size = 512 * 1024u;
 
   ostringstream info;
   info << "Skyline F9 cartridge, 128 × 4k banks\n"

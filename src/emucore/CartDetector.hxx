@@ -245,6 +245,11 @@ class CartDetector
     */
     static bool isProbablyX07(const BytePtr& image, uInt32 size);
 
+  /**
+     Returns true if the image is probably an F9 bankswitching cartridge
+  */
+  static bool isProbablyF9(const BytePtr& image, uInt32 size);
+
   private:
     // Following constructors and assignment operators not supported
     CartDetector() = delete;

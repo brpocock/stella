@@ -8,13 +8,12 @@
 //  SS  SS   tt   ee      ll   ll  aa  aa
 //   SSSS     ttt  eeeee llll llll  aaaaa
 //
-// Copyright (c) 1995-2016 by Bradford W. Mott, Stephen Anthony
+// Copyright (c) 1995-2017 by Bradford W. Mott, Stephen Anthony
 // and the Stella Team
 //
 // See the file "License.txt" for information on usage and redistribution of
 // this file, and for a DISCLAIMER OF ALL WARRANTIES.
 //
-// $Id: CartF9.hxx brpocock $
 //============================================================================
 
 #ifndef CARTRIDGEF9_HXX
@@ -29,11 +28,10 @@ class System;
 #endif
 
 /**
-  Cartridge class used for Atari's 32K bankswitched games.  There
-  are eight 4K banks. Based upon the F4 code by B. Mott
+  Cartridge class used for Skyline 512k bankswitched game.  There
+  are 128 4kiB banks, based on writes to $xFF9.
 
   @author Bruce-Robert Fenn Pocock 
-  @version $Id: CartF9.hxx brpocock $
 */
 class CartridgeF9 : public Cartridge
 {
@@ -47,7 +45,7 @@ class CartridgeF9 : public Cartridge
       @param size      The size of the ROM image
       @param settings  A reference to the various settings (read-only)
     */
-    CartridgeF9(const uInt8* image, uInt32 size, const Settings& settings);
+    CartridgeF9(const BytePtr& image, uInt32 size, const Settings& settings);
     virtual ~CartridgeF9() = default;
 
   public:
@@ -96,7 +94,7 @@ class CartridgeF9 : public Cartridge
       @param size  Set to the size of the internal ROM image data
       @return  A pointer to the internal ROM image data
     */
-    const uInt8* getImage(int& size) const override;
+    const uInt8* getImage(uInt32& size) const override;
 
     /**
       Save the current state of this cart to the given Serializer.
@@ -151,7 +149,7 @@ class CartridgeF9 : public Cartridge
     bool poke(uInt16 address, uInt8 value) override;
 
   private:
-    // The 32K ROM image of the cartridge
+    // The 512k ROM image of the cartridge
     uInt8 myImage[512 * 1024];
 
     // Indicates which bank is currently active
