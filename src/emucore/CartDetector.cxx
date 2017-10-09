@@ -50,6 +50,7 @@
 #include "CartF6SC.hxx"
 #include "CartF8.hxx"
 #include "CartF8SC.hxx"
+#include "CartF9.hxx"
 #include "CartFA.hxx"
 #include "CartFA2.hxx"
 #include "CartFE.hxx"
@@ -303,6 +304,8 @@ CartDetector::createFromImage(const BytePtr& image, uInt32 size, BSType type,
       return make_unique<CartridgeF8>(image, size, md5, osystem.settings());
     case BSType::_F8SC:
       return make_unique<CartridgeF8SC>(image, size, osystem.settings());
+    case BSType::_F9:
+      return make_unique<CartridgeF9>(image, size, osystem.settings());
     case BSType::_FA:
       return make_unique<CartridgeFA>(image, size, osystem.settings());
     case BSType::_FA2:
@@ -478,6 +481,17 @@ BSType CartDetector::autodetectType(const BytePtr& image, uInt32 size)
       type = BSType::_3F;
     else /*if(isProbablySB(image, size))*/
       type = BSType::_SB;
+  }
+  else if(size == 512*1024)  // 512k
+  {
+    if(isProbablyF9(image, size))
+      type = BSType::_F9;
+    else if(isProbably3E(image, size))
+      type = BSType::_3E;
+    else if(isProbably3F(image, size))
+      type = BSType::_3F;
+    else
+      type = BSType::_4K;  // Most common bankswitching type
   }
   else  // what else can we do?
   {
@@ -948,6 +962,27 @@ bool CartDetector::isProbablyX07(const BytePtr& image, uInt32 size)
   for(uInt32 i = 0; i < 6; ++i)
     if(searchForBytes(image.get(), size, signature[i], 3, 1))
       return true;
+
+  return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyF9(const BytePtr& image, uInt32 size)
+{
+  // F9 bankswitching switches by writing to $xFF9 the bank number
+  // Skyline's the only game using it, and it does STA $FFF9 from high in
+  // every bank, so there should be a minimum of 1024 hits,
+  // since every bank will switch to at least bank 0 and some other bank.
+  // (techinically that could be only 512, but it seems safer this way)
+
+  if(size != 512*1024)
+    return false;
+
+  uInt8 signature[3] =
+    { 0x8D, 0xf9, 0xff }  // STA $FFF9
+  ;
+  if(searchForBytes(image.get(), size, signature, 3, 1024))
+    return true;
 
   return false;
 }
