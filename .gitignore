@@ -10,3 +10,4 @@ build/
 src/macosx/M6502.ins
 *.dSYM
 *~
+*.orig
