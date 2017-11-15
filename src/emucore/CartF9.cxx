@@ -24,11 +24,12 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 CartridgeF9::CartridgeF9(const BytePtr& image, uInt32 size, const Settings& settings)
   : Cartridge(settings),
-    myCurrentBank(0)
+    myCurrentBank(0),
+    myImageSize(size)
 {
   // Copy the ROM image into my buffer
-  memcpy(myImage, image.get(), std::min(512*1024u, size));
-  createCodeAccessBase(512*1024);
+  memcpy(myImage, image.get(), std::min(1024*1024u, size));
+  createCodeAccessBase(size);
 
   // Remember startup bank
   myStartBank = 0;
@@ -60,12 +61,11 @@ uInt8 CartridgeF9::peek(uInt16 address)
   // the byte value read from 0xff9 in the current bank; this is
   // not encouraged behavior, and I'm not even sure if it would
   // work on the hardware yet.
-  if(address = 0x0FF9)
+  if(address == 0x0FF9)
   {
-    bank(myImage[(myCurrentBank << 12) + address & 0xfff]);
+    bank((myCurrentBank |
+          myImage[(myCurrentBank << 12) + address & 0xfff]));
   }
-
-
 
   return myImage[(myCurrentBank << 12) + address & 0xfff];
 }
@@ -90,26 +90,26 @@ bool CartridgeF9::bank(uInt16 bank)
   if(bankLocked()) return false;
 
   // Remember what bank we're in
-  myCurrentBank = bank;
+  myCurrentBank = (bank % (myImageSize / 4096));
   uInt32 offset = myCurrentBank << 12;
 
   System::PageAccess access(this, System::PA_READ);
 
   // Set the page accessing methods for the hot spots
-  for(uInt32 i = (0x1FF9 & ~System::PAGE_MASK); i < 0x2000;
-      i += (1 << System::PAGE_SHIFT))
+  for(uInt32 addr = (0x1FF9 & ~System::PAGE_MASK); addr < 0x2000;
+      addr += System::PAGE_SIZE)
   {
-    access.codeAccessBase = &myCodeAccessBase[offset + (i & 0x0FFF)];
-    mySystem->setPageAccess(i >> System::PAGE_SHIFT, access);
+    access.codeAccessBase = &myCodeAccessBase[offset + (addr & 0x0FFF)];
+    mySystem->setPageAccess(addr, access);
   }
 
   // Setup the page access methods for the current bank
-  for(uInt32 address = 0x1000; address < (0x1FF9u & ~System::PAGE_MASK);
-      address += (1 << System::PAGE_SHIFT))
+  for(uInt32 addr = 0x1000; addr < (0x1FF9u & ~System::PAGE_MASK);
+      addr += System::PAGE_SIZE)
   {
-    access.directPeekBase = &myImage[offset + (address & 0x0FFF)];
-    access.codeAccessBase = &myCodeAccessBase[offset + (address & 0x0FFF)];
-    mySystem->setPageAccess(address >> System::PAGE_SHIFT, access);
+    access.directPeekBase = &myImage[offset + (addr & 0x0FFF)];
+    access.codeAccessBase = &myCodeAccessBase[offset + (addr & 0x0FFF)];
+    mySystem->setPageAccess(addr >> System::PAGE_SHIFT, access);
   }
   return myBankChanged = true;
 }
@@ -123,7 +123,7 @@ uInt16 CartridgeF9::getBank() const
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 uInt16 CartridgeF9::bankCount() const
 {
-  return 128;
+  return (myImageSize / 4096);
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,7 +136,7 @@ bool CartridgeF9::patch(uInt16 address, uInt8 value)
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const uInt8* CartridgeF9::getImage(uInt32& size) const
 {
-  size = 512 * 1024u;
+  size = myImageSize;
   return myImage;
 }
 

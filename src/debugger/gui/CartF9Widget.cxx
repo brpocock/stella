@@ -31,24 +31,26 @@ CartridgeF9Widget::CartridgeF9Widget(
   : CartDebugWidget(boss, lfont, nfont, x, y, w, h),
     myCart(cart)
 {
-  uInt32 size = 512 * 1024u;
+  uInt32 size = cart.bankCount() * 4096;
 
   ostringstream info;
-  info << "Skyline F9 cartridge, 128 × 4k banks\n"
-       << "Startup bank = " << cart.myStartBank << "\n"
+  info << "Skyline F9 cartridge, " << cart.bankCount() << " × 4kiB banks\n"
+       << "Startup bank = "
+       << std::dec << cart.myStartBank
+       << " ($" << std::hex << cart.myStartBank << ")\n"
        << "Hotspot latch $ff9\n";
 
   int xpos = 10,
-      ypos = addBaseInformation(size, "Skyline-512k", info.str(), 15) + myLineHeight;
+      ypos = addBaseInformation(size, "Skyline $f9", info.str(), 15) + myLineHeight;
 
   VariantList items;
-  for (int i = 0; i < 511; ++i) {
+  for (int i = 0; i < cart.bankCount(); ++i) {
     VarList::push_back(items, static_cast< std::ostringstream & >
                        ((std::ostringstream() <<
                          std::dec << i << " ($" << std::hex << i << ")") ).str());
   }
   myBank =
-    new PopUpWidget(boss, _font, xpos, ypos-2, _font.getStringWidth("512 ($7F) "),
+    new PopUpWidget(boss, _font, xpos, ypos-2, _font.getStringWidth("1024 ($FF) "),
                     myLineHeight, items, "Set bank: ",
                     _font.getStringWidth("Set bank: "), kBankChanged);
   myBank->setTarget(this);

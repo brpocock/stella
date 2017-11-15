@@ -149,8 +149,11 @@ class CartridgeF9 : public Cartridge
     bool poke(uInt16 address, uInt8 value) override;
 
   private:
-    // The 512k ROM image of the cartridge
-    uInt8 myImage[512 * 1024];
+    // The ROM image of the cartridge
+    uInt8 myImage[1024 * 1024];
+
+  // Size of the ROM (should be a power-of-two)
+  uInt32 myImageSize;
 
     // Indicates which bank is currently active
     uInt16 myCurrentBank;
