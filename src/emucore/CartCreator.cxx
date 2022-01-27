@@ -49,6 +49,7 @@
 #include "CartF6SC.hxx"
 #include "CartF8.hxx"
 #include "CartF8SC.hxx"
+#include "CartF9.hxx"
 #include "CartFA.hxx"
 #include "CartFA2.hxx"
 #include "CartFC.hxx"
@@ -325,6 +326,8 @@ CartCreator::createFromImage(const ByteBuffer& image, size_t size, Bankswitch::T
       return make_unique<CartridgeF8>(image, size, md5, settings);
     case Bankswitch::Type::_F8SC:
       return make_unique<CartridgeF8SC>(image, size, md5, settings);
+    case Bankswitch::Type::_F9:
+      return make_unique<CartridgeF9>(image, size, md5, settings);
     case Bankswitch::Type::_FA:
       return make_unique<CartridgeFA>(image, size, md5, settings);
     case Bankswitch::Type::_FA2:
