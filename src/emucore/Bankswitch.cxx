@@ -134,7 +134,7 @@ Bankswitch::BSList = {{
   { "F6SC"    , "F6SC (16K Atari + RAM)"      },
   { "F8"      , "F8 (8K Atari)"               },
   { "F8SC"    , "F8SC (8K Atari + RAM)"       },
-  { "F9"      , "F9 (256K TempterofFate)"     },
+  { "F9"      , "F9 (1M TempterofFate)"       },
   { "FA"      , "FA (CBS RAM Plus)"           },
   { "FA2"     , "FA2 (CBS RAM Plus 24/28K)"   },
   { "FC"      , "FC (32K Amiga)"              },
