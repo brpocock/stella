@@ -33,6 +33,7 @@
 #include "BoosterWidget.hxx"
 #include "DrivingWidget.hxx"
 #include "GenesisWidget.hxx"
+#include "Joy2BPlusWidget.hxx"
 #include "KeyboardWidget.hxx"
 #include "AtariVoxWidget.hxx"
 #include "SaveKeyWidget.hxx"
@@ -537,6 +538,8 @@ ControllerWidget* RiotWidget::addControlWidget(GuiObject* boss, const GUI::Font&
       return new DrivingWidget(boss, font, x, y, controller);
     case Controller::Type::Genesis:
       return new GenesisWidget(boss, font, x, y, controller);
+    case Controller::Type::Joy2BPlus:
+      return new Joy2BPlusWidget(boss, font, x, y, controller);
     case Controller::Type::Joystick:
       return new JoystickWidget(boss, font, x, y, controller);
     case Controller::Type::Keyboard:

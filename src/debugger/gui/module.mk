@@ -63,6 +63,7 @@ MODULE_OBJS := \
         src/debugger/gui/DrivingWidget.o \
         src/debugger/gui/FlashWidget.o \
         src/debugger/gui/GenesisWidget.o \
+        src/debugger/gui/Joy2BPlusWidget.o \
         src/debugger/gui/JoystickWidget.o \
         src/debugger/gui/KeyboardWidget.o \
         src/debugger/gui/PaddleWidget.o \

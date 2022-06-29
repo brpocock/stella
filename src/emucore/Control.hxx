@@ -100,7 +100,7 @@ class Controller : public Serializable
     {
       Unknown,
       AmigaMouse, AtariMouse, AtariVox, BoosterGrip, CompuMate,
-      Driving, Genesis, Joystick, Keyboard, KidVid, MindLink,
+      Driving, Genesis, Joystick, Joy2BPlus, Keyboard, KidVid, MindLink,
       Paddles, PaddlesIAxis, PaddlesIAxDr, SaveKey, TrakBall,
       Lightgun, QuadTari,
       LastType

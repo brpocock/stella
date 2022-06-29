@@ -80,6 +80,8 @@ static void update_input()
   GET_BITMASK(pad)
   switch(input_type[0])
   {
+    case Controller::Type::Joy2BPLus:
+      [[fallthrough]];
     case Controller::Type::BoosterGrip:
       MASK_EVENT(Event::LeftJoystickFire9, pad, RETRO_DEVICE_ID_JOYPAD_Y);
       [[fallthrough]];

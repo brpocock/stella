@@ -109,7 +109,7 @@ string Controller::getName(const Type type)
   {
     "Unknown",
     "Amiga mouse", "Atari mouse", "AtariVox", "Booster Grip", "CompuMate",
-    "Driving", "Sega Genesis", "Joystick", "Keyboard", "Kid Vid", "MindLink",
+    "Driving", "Sega Genesis", "Joystick", "Joy2b+", "Keyboard", "Kid Vid", "MindLink",
     "Paddles", "Paddles_IAxis", "Paddles_IAxDr", "SaveKey", "Trak-Ball",
     "Light Gun", "QuadTari"
   };
@@ -124,7 +124,7 @@ string Controller::getPropName(const Type type)
   {
     "AUTO",
     "AMIGAMOUSE", "ATARIMOUSE", "ATARIVOX", "BOOSTERGRIP", "COMPUMATE",
-    "DRIVING", "GENESIS", "JOYSTICK", "KEYBOARD", "KIDVID", "MINDLINK",
+    "DRIVING", "GENESIS", "JOYSTICK", "JOY2B+", "KEYBOARD", "KIDVID", "MINDLINK",
     "PADDLES", "PADDLES_IAXIS", "PADDLES_IAXDR", "SAVEKEY", "TRAKBALL",
     "LIGHTGUN", "QUADTARI"
   };

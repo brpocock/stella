@@ -193,6 +193,7 @@ void StellaSettingsDialog::addGameOptions(WidgetArray& wid, int xpos, int& ypos)
   VarList::push_back(ctrls, "Atari mouse", "ATARIMOUSE");
   VarList::push_back(ctrls, "Trak-Ball", "TRAKBALL");
   VarList::push_back(ctrls, "Sega Genesis", "GENESIS");
+  VarList::push_back(ctrls, "Joy2b+", "JOY2B+");
   VarList::push_back(ctrls, "QuadTari", "QUADTARI");
 
   int pwidth = _font.getStringWidth("Sega Genesis");

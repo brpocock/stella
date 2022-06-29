@@ -33,6 +33,7 @@
 #include "Keyboard.hxx"
 #include "KidVid.hxx"
 #include "Genesis.hxx"
+#include "Joy2BPlus.hxx"
 #include "MindLink.hxx"
 #include "CompuMate.hxx"
 #include "AmigaMouse.hxx"
@@ -997,6 +998,10 @@ unique_ptr<Controller> Console::getControllerPort(const Controller::Type type,
     }
     case Controller::Type::Genesis:
       controller = make_unique<Genesis>(port, myEvent, *mySystem);
+      break;
+
+    case Controller::Type::Joy2BPlus:
+      controller = make_unique<Joy2BPlus>(port, myEvent, *mySystem);
       break;
 
     case Controller::Type::KidVid:
