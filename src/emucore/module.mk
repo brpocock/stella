@@ -31,6 +31,7 @@ MODULE_OBJS := \
 	src/emucore/CartE0.o \
 	src/emucore/CartE7.o \
 	src/emucore/CartEF.o \
+	src/emucore/CartEFF.o \
 	src/emucore/CartEFSC.o \
 	src/emucore/CartBF.o \
 	src/emucore/CartBFSC.o \

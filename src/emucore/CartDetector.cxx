@@ -182,8 +182,9 @@ Bankswitch::Type CartDetector::autodetectType(const ByteBuffer& image, size_t si
       type = Bankswitch::Type::_3F;
     else if(isProbably4A50(image, size))
       type = Bankswitch::Type::_4A50;
-    else if(isProbablyEF(image, size, type))
+    else if(isProbablyEFF(image, size, type))
       ; // type has been set directly in the function
+    // EFF also checks/sets EF and EFSC
     else if(isProbablyX07(image, size))
       type = Bankswitch::Type::_X07;
     else
@@ -622,6 +623,28 @@ bool CartDetector::isProbablyE78K(const ByteBuffer& image, size_t size)
       return true;
 
   return false;
+}
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+bool CartDetector::isProbablyEFF(const ByteBuffer& image, size_t size,
+                                Bankswitch::Type& type)
+{
+  // An EFF  (EF + Flash) cartridge  is EF plus hotspots  at $fff0-$fff5
+  // for EEPROM  access. The  only current (2022)  use case  is AtariAge
+  // _Grizzards_. In that  game, $fff0-$fff3 are filled  with "EFFB"; in
+  // any case, $fff4 must not be equal to $fff5 or it will be impossible
+  // to read from the EEPROM.
+  static constexpr uInt8 bata[] = { 'b', 'a', 't', 'a' };
+  if (isProbablyEF (image, size, type))
+    {
+      const uInt8* endBytes = image.get() + size - 0x10;
+      if(searchForBytes(endBytes, 0x10, bata, 4) &&
+         endBytes[4] != endBytes[5])
+        type = Bankswitch::Type::_EFF;
+      return true; // we have set EF, EFSC, or EFF now.
+    } else {
+    return false;
+  }
 }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

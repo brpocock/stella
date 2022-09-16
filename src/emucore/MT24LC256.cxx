@@ -232,7 +232,8 @@ void MT24LC256::jpee_data_stop()
       myDataChanged = true;
       myPageHit[jpee_address / PAGE_SIZE] = true;
 
-      myCallback("AtariVox/SaveKey EEPROM write");
+      if (myCallback)
+        myCallback("AtariVox/SaveKey EEPROM write");
 
       myData[(jpee_address++) & jpee_sizemask] = jpee_packet[i];
       if (!(jpee_address & jpee_pagemask))
@@ -339,7 +340,8 @@ void MT24LC256::jpee_clock_fall()
       jpee_state=3;
       myPageHit[jpee_address / PAGE_SIZE] = true;
 
-      myCallback("AtariVox/SaveKey EEPROM read");
+      if (myCallback)
+        myCallback("AtariVox/SaveKey EEPROM read");
 
       jpee_nb = (myData[jpee_address & jpee_sizemask] << 1) | 1;  /* Fall through */
       JPEE_LOG2("I2C_READ(%04X=%02X)",jpee_address,jpee_nb/2)

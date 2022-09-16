@@ -172,6 +172,7 @@ Bankswitch::Sizes = {{
   {    8_KB,   8_KB }, // _E0
   {    8_KB,  16_KB }, // _E7
   {   64_KB,  64_KB }, // _EF
+  {   64_KB,  64_KB }, // _EFF
   {   64_KB,  64_KB }, // _EFSC
   {   64_KB,  64_KB }, // _F0
   {   32_KB,  32_KB }, // _F4
@@ -260,6 +261,7 @@ Bankswitch::ExtensionMap Bankswitch::ourExtensions = {
   { "E78"   , Bankswitch::Type::_E7     },
   { "E78K"  , Bankswitch::Type::_E7     },
   { "EF"    , Bankswitch::Type::_EF     },
+  { "EFF"   , Bankswitch::Type::_EF     },
   { "EFS"   , Bankswitch::Type::_EFSC   },
   { "EFSC"  , Bankswitch::Type::_EFSC   },
   { "F0"    , Bankswitch::Type::_F0     },
@@ -325,6 +327,7 @@ Bankswitch::NameToTypeMap Bankswitch::ourNameToTypes = {
   { "E0"      , Bankswitch::Type::_E0     },
   { "E7"      , Bankswitch::Type::_E7     },
   { "EF"      , Bankswitch::Type::_EF     },
+  { "EFF"     , Bankswitch::Type::_EFF    },
   { "EFSC"    , Bankswitch::Type::_EFSC   },
   { "F0"      , Bankswitch::Type::_F0     },
   { "F4"      , Bankswitch::Type::_F4     },

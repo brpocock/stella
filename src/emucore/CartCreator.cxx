@@ -43,6 +43,7 @@
 #include "CartE0.hxx"
 #include "CartE7.hxx"
 #include "CartEF.hxx"
+#include "CartEFF.hxx"
 #include "CartEFSC.hxx"
 #include "CartF0.hxx"
 #include "CartF4.hxx"
@@ -283,6 +284,8 @@ CartCreator::createFromImage(const ByteBuffer& image, size_t size,
       return make_unique<CartridgeE7>(image, size, md5, settings);
     case Bankswitch::Type::_EF:
       return make_unique<CartridgeEF>(image, size, md5, settings);
+    case Bankswitch::Type::_EFF:
+      return make_unique<CartridgeEFF>(image, size, md5, settings);
     case Bankswitch::Type::_EFSC:
       return make_unique<CartridgeEFSC>(image, size, md5, settings);
     case Bankswitch::Type::_F0:
