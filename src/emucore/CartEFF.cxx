@@ -123,12 +123,17 @@ void CartridgeEFF::setI2CData(bool value) {
 }
 
 void CartridgeEFF::doI2C() {
-  // TODO
+  if (myEEPROM)
+    myEEPROM->writeSDA(myI2CData);
+  if (myEEPROM)
+    myEEPROM->writeSCL(myI2CClock);
 }
 
 uInt8 CartridgeEFF::readI2C() {
-  // TODO
-  return myImage.get()[0x0ff4]; // zero value
+  if (myEEPROM->readSDA())
+    return myImage.get()[0x0ff5]; // one value
+  else
+    return myImage.get()[0x0ff4]; // zero value
 }
 
 void CartridgeEFF::setNVRamFile(const string& nvramdir,
