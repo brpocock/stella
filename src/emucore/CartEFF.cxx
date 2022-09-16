@@ -128,7 +128,7 @@ void CartridgeEFF::doI2C() {
 
 uInt8 CartridgeEFF::readI2C() {
   // TODO
-  return image.get()[0x0ff4]; // zero value
+  return myImage.get()[0x0ff4]; // zero value
 }
 
 void CartridgeEFF::setNVRamFile(const string& nvramdir,
